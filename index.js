@@ -54,11 +54,13 @@ function listAll(drive, archive, opt) {
   children(archive, function (childArchives) {
     childArchives.forEach( c => {
       var childArchive = drive.createArchive(c.key)
-      streams.push(childArchive.list(opt))
+      var rs = childArchive.list(opt)
+      rs.prefix = c.prefix
+      streams.push(rs)
     })
   })
 
-  streams.forEach(s => { s.pipe(combined) })
+  streams.forEach(s => { s.pipe(prefixStream(s.prefix)).pipe(combined) })
   return combined
 }
 
@@ -66,4 +68,12 @@ function appendLine(archive, name, toAppend, cb) {
   var rs = archive.createFileReadStream(name)
 
   multistream([rs, toStream(toAppend+"\n")]).pipe(archive.createFileWriteStream(name)).on('finish', cb)
+}
+
+function prefixStream(prefix) {
+  return through2.obj(function(chunk, enc, cb) {
+    if (prefix) chunk.name = prefix + chunk.name
+    this.push(chunk)
+    cb()
+  })
 }
