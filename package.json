@@ -1,5 +1,5 @@
 {
-  "name": "hyperdrive-archive-nested",
+  "name": "hyperdrive-nested-archive",
   "version": "0.1.0",
   "description": "'create nested hyperdrive'",
   "main": "index.js",
