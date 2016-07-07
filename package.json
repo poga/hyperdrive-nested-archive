@@ -18,6 +18,8 @@
     "mocha": "^2.5.3"
   },
   "dependencies": {
-    "stream-to-string": "^1.0.1"
+    "multistream": "^2.0.5",
+    "split": "^1.0.0",
+    "string-to-stream": "^1.1.0"
   }
 }

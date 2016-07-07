@@ -1,4 +1,6 @@
-const toString = require('stream-to-string')
+const toStream = require('string-to-stream')
+const multistream = require('multistream')
+const split = require('split')
 
 module.exports = { addChild: addChild, childKeys: childKeys }
 
@@ -12,15 +14,14 @@ function childKeys(archive, cb) {
   var keys = []
   touch(archive, '/.link', function () {
     var rs = archive.createFileReadStream('/.link')
-
-    rs.on('data', (data) => {
-      data.toString().split("\n").forEach( x => {
+    rs.pipe(split())
+      .on('data', (line) => {
+        var x = line.toString()
         if (x === "") return
 
         keys.push(x)
       })
-    })
-    rs.on('end', () => { cb(keys) })
+      .on('end', () => { cb(keys) })
   })
 }
 
@@ -31,17 +32,12 @@ function touch(archive, filename, cb) {
       return cb()
     }
 
-    var writer = archive.createFileWriteStream(filename)
-    writer.on('finish', cb)
-    writer.end('')
+    toStream('').pipe(archive.createFileWriteStream(filename)).on('finish', cb)
   })
 }
 
 function appendLine(archive, name, toAppend, cb) {
   var rs = archive.createFileReadStream(name)
 
-  toString(rs, function (err, data) {
-    archive.createFileWriteStream(name).end(data + "\n" + toAppend)
-    cb()
-  })
+  multistream([rs, toStream("\n" + toAppend)]).pipe(archive.createFileWriteStream(name)).on('finish', cb)
 }
