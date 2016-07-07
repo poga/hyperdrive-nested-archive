@@ -13,12 +13,16 @@ describe('hyperdrive-link', function () {
     var archive2 = drive2.createArchive({live: true})
 
     it("should OK to add an archive as another archive's child", function (done) {
-      nested.addChild(archive1, archive2, function (err) {
+      nested.addChild(archive1, '/link2', archive2, function (err) {
         assert.equal(err, null)
 
-        nested.childKeys(archive1, function (keys) {
+        nested.children(archive1, function (keys) {
           assert.equal(err, null)
-          assert.deepEqual(keys, [archive2.key.toString('hex')])
+          assert.deepEqual(keys, [
+            { prefix: '/link2',
+              key: archive2.key.toString('hex')
+            }
+          ])
 
           done()
         })
@@ -34,12 +38,16 @@ describe('hyperdrive-link', function () {
 
     it("can add finalized child", function (done) {
       archive2.finalize(() => {
-        nested.addChild(archive1, archive2, function (err) {
+        nested.addChild(archive1, '/link2',archive2, function (err) {
           assert.equal(err, null)
 
-          nested.childKeys(archive1, function (keys) {
+          nested.children(archive1, function (keys) {
             assert.equal(err, null)
-            assert.deepEqual(keys, [archive2.key.toString('hex')])
+            assert.deepEqual(keys, [
+              { prefix: '/link2',
+                key: archive2.key.toString('hex')
+              }
+            ])
 
             done()
           })
@@ -57,15 +65,22 @@ describe('hyperdrive-link', function () {
     var archive3 = drive3.createArchive({live: true})
 
     it("an archive can have multiple children", function (done) {
-      nested.addChild(archive1, archive2, function (err) {
+      nested.addChild(archive1, '/link2', archive2, function (err) {
         assert.equal(err, null)
 
-        nested.addChild(archive1, archive3, function (err) {
+        nested.addChild(archive1, '/link3', archive3, function (err) {
           assert.equal(err, null)
 
-          nested.childKeys(archive1, function (keys) {
+          nested.children(archive1, function (keys) {
             assert.equal(err, null)
-            assert.deepEqual(keys, [archive2.key.toString('hex'),archive3.key.toString('hex')])
+            assert.deepEqual(keys, [
+              { prefix: '/link2',
+                key: archive2.key.toString('hex')
+              },
+              { prefix: '/link3',
+                key: archive3.key.toString('hex')
+              }
+            ])
 
             done()
           })

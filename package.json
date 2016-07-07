@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "multistream": "^2.0.5",
-    "split": "^1.0.0",
+    "split2": "^2.1.0",
     "string-to-stream": "^1.1.0"
   }
 }

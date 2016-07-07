@@ -1,27 +1,26 @@
 const toStream = require('string-to-stream')
 const multistream = require('multistream')
-const split = require('split')
+const split = require('split2')
 
-module.exports = { addChild: addChild, childKeys: childKeys }
+module.exports = { addChild: addChild, children: children }
 
-function addChild(archive, childArchive, cb) {
+function addChild(archive, prefix, childArchive, cb) {
   touch(archive, '/.link', function () {
-    appendLine(archive, '/.link', childArchive.key.toString('hex'), cb)
+    var child = { prefix: prefix, key: childArchive.key.toString('hex') }
+    appendLine(archive, '/.link', JSON.stringify(child), cb)
   })
 }
 
-function childKeys(archive, cb) {
-  var keys = []
+function children(archive, cb) {
+  var children = []
   touch(archive, '/.link', function () {
     var rs = archive.createFileReadStream('/.link')
-    rs.pipe(split())
-      .on('data', (line) => {
-        var x = line.toString()
-        if (x === "") return
-
-        keys.push(x)
+    rs.pipe(split(JSON.parse))
+      .on('data', (child) => {
+        children.push(child)
       })
-      .on('end', () => { cb(keys) })
+
+      .on('end', () => { cb(children) })
   })
 }
 
@@ -39,5 +38,5 @@ function touch(archive, filename, cb) {
 function appendLine(archive, name, toAppend, cb) {
   var rs = archive.createFileReadStream(name)
 
-  multistream([rs, toStream("\n" + toAppend)]).pipe(archive.createFileWriteStream(name)).on('finish', cb)
+  multistream([rs, toStream(toAppend+"\n")]).pipe(archive.createFileWriteStream(name)).on('finish', cb)
 }
