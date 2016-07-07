@@ -2,6 +2,10 @@
 
 create nested [hyperdrive](https://github.com/mafintosh/hyperdrive) archives.
 
+## Install
+
+`npm i hyperdrive-nested-archive`
+
 ## Synopsis
 
 ```
