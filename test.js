@@ -96,7 +96,7 @@ describe('hyperdrive-link', function () {
     var drive2 = hyperdrive(memdb())
     var archive2 = drive2.createArchive({live: true})
 
-    it('should return a stream which emit everytime the archive and its child have new file', function (done) {
+    it('should return a stream which emit everytime the archive have new file', function (done) {
       nested.addChild(archive1, '/link2', archive2, function (err) {
         var entries = nested.listAll(drive1, archive1, {live: true})
 
@@ -107,6 +107,20 @@ describe('hyperdrive-link', function () {
         })
 
         toStream('foo').pipe(archive1.createFileWriteStream('/test.txt'))
+      })
+    })
+
+    it('should return a stream which emit everytime the archive\'s child have new file', function (done) {
+      nested.addChild(archive1, '/link2', archive2, function (err) {
+        var entries = nested.listAll(drive1, archive1, {live: true})
+
+        entries.on('data', (entry) => {
+          assert.equal(entry.name, '/test.txt')
+
+          done()
+        })
+
+        toStream('foo').pipe(archive2.createFileWriteStream('/test.txt'))
       })
     })
   })
