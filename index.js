@@ -4,17 +4,19 @@ const split = require('split2')
 
 module.exports = { addChild: addChild, children: children }
 
+const metafile = '/.link'
+
 function addChild(archive, prefix, childArchive, cb) {
-  touch(archive, '/.link', function () {
+  touch(archive, metafile, function () {
     var child = { prefix: prefix, key: childArchive.key.toString('hex') }
-    appendLine(archive, '/.link', JSON.stringify(child), cb)
+    appendLine(archive, metafile, JSON.stringify(child), cb)
   })
 }
 
 function children(archive, cb) {
   var children = []
-  touch(archive, '/.link', function () {
-    var rs = archive.createFileReadStream('/.link')
+  touch(archive, metafile, function () {
+    var rs = archive.createFileReadStream(metafile)
     rs.pipe(split(JSON.parse))
       .on('data', (child) => {
         children.push(child)
