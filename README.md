@@ -8,7 +8,7 @@ create nested [hyperdrive](https://github.com/mafintosh/hyperdrive) archives.
 
 ## Synopsis
 
-```
+```JavaScript
 const memdb = require('memdb')
 const hyperdrive = require('hyperdrive')
 const nested = require('hyperdrive-nested-archive')
