@@ -91,12 +91,12 @@ describe('hyperdrive-link', function () {
   })
 
   describe('listAll()', function () {
-    var drive1 = hyperdrive(memdb())
-    var archive1 = drive1.createArchive({live: true})
-    var drive2 = hyperdrive(memdb())
-    var archive2 = drive2.createArchive({live: true})
-
     it('should return a stream which emit everytime the archive have new file', function (done) {
+      var drive1 = hyperdrive(memdb())
+      var archive1 = drive1.createArchive({live: true})
+      var drive2 = hyperdrive(memdb())
+      var archive2 = drive2.createArchive({live: true})
+
       nested.addChild(archive1, '/link2', archive2, function (err) {
         var entries = nested.listAll(drive1, archive1, {live: true})
 
@@ -111,16 +111,21 @@ describe('hyperdrive-link', function () {
     })
 
     it('should return a stream which emit everytime the archive\'s child have new file', function (done) {
+      var drive1 = hyperdrive(memdb())
+      var archive1 = drive1.createArchive({live: true})
+      var drive2 = hyperdrive(memdb())
+      var archive2 = drive2.createArchive({live: true})
+
       nested.addChild(archive1, '/link2', archive2, function (err) {
         var entries = nested.listAll(drive1, archive1, {live: true})
 
         entries.on('data', (entry) => {
-          assert.equal(entry.name, '/test.txt')
+          assert.equal(entry.name, '/test2.txt')
 
           done()
         })
 
-        toStream('foo').pipe(archive2.createFileWriteStream('/test.txt'))
+        toStream('foo').pipe(archive2.createFileWriteStream('/test2.txt'))
       })
     })
   })
