@@ -1,6 +1,6 @@
 {
   "name": "hyperdrive-nested-archive",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "create nested hyperdrive archive",
   "main": "index.js",
   "scripts": {
@@ -22,5 +22,12 @@
     "split2": "^2.1.0",
     "string-to-stream": "^1.1.0",
     "through2": "^2.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/poga/hyperdrive-nested-archive"
+  },
+  "bugs": {
+    "url": "https://github.com/poga/hyperdrive-nested-archive/issues"
   }
 }
