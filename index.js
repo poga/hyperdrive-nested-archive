@@ -1,9 +1,6 @@
 const toStream = require('string-to-stream')
-const multistream = require('multistream')
-const split = require('split2')
 const stream = require('stream')
 const through2 = require('through2')
-const raf = require('random-access-file')
 const bs58 = require('bs58')
 
 const hyperdrive = require('hyperdrive')
