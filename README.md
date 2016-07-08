@@ -1,6 +1,6 @@
 # hyperdrive-nested-archive
 
-create nested [hyperdrive](https://github.com/mafintosh/hyperdrive) archives.
+create nested [hyperdrive](https://github.com/mafintosh/hyperdrive) archives, where archives can have different owner.
 
 ## Install
 
@@ -38,7 +38,9 @@ toStream('foo').pipe(archive2.createFileWriteStream('/test2.txt'))
 
 ## How it works
 
-It's pretty simple(and hacky). When we add a child to an archive, we created a file called `/.link` into the root archive, which the content is a list of child archive's key.
+It's pretty simple(and hacky). When we add a child to an archive, we created a file inside `/.link/` directory with name including its prefix and key.
+
+For example, if we add a child archive with prefix `/foo` and key `abc`, a file named `/.link/link-${base58('/foo')}-${abc}` will be created.
 
 Then this package provides a helper function to list entries from every archive in the archive tree.
 

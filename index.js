@@ -3,77 +3,75 @@ const multistream = require('multistream')
 const split = require('split2')
 const stream = require('stream')
 const through2 = require('through2')
+const raf = require('random-access-file')
+const bs58 = require('bs58')
+
+const hyperdrive = require('hyperdrive')
+const memdb = require('memdb')
+const swarm = require('hyperdrive-archive-swarm')
 
 module.exports = { addChild: addChild, children: children, listAll: listAll }
 
-const metafile = '/.link'
+const linkFileDir = '/.link'
 
 function addChild(archive, prefix, childArchive, cb) {
-  touch(archive, metafile, function () {
-    var child = { prefix: prefix, key: childArchive.key.toString('hex') }
-    appendLine(archive, metafile, JSON.stringify(child), cb)
-  })
+  var child = { prefix: prefix, key: childArchive.key.toString('hex') }
+  var linkFile = `${linkFileDir}/link-${bs58.encode(new Buffer(prefix))}-${child.key}`
+  toStream('link').pipe(archive.createFileWriteStream(linkFile)).on('finish', cb)
 }
 
 function children(archive, cb) {
   var children = []
-  touch(archive, metafile, function () {
-    var rs = archive.createFileReadStream(metafile)
-    rs.pipe(split(JSON.parse))
-      .on('data', (child) => {
-        children.push(child)
-      })
 
-      .on('end', () => { cb(children) })
+  archive.list(function(err, entries) {
+    if (err) {
+      return cb(err)
+    }
+
+    entries.forEach((x) => {
+      if (isLinkFile(x.name)) {
+        var attrs = x.name.split(`${linkFileDir}/link-`)[1]
+        var prefix = new Buffer(bs58.decode(attrs.split('-')[0])).toString()
+        var key = attrs.split('-')[1]
+
+        children.push({prefix: prefix, key: key})
+      }
+    })
+
+    cb(undefined, children)
   })
 }
 
-// create file if not exists
-function touch(archive, filename, cb) {
-  archive.list(function (err, entries) {
-    if (entries.find(x => { return x.name === filename })) {
-      return cb()
-    }
-
-    toStream('').pipe(archive.createFileWriteStream(filename)).on('finish', cb)
-  })
+function isLinkFile(filename) {
+  return filename.startsWith(`${linkFileDir}/link-`)
 }
 
 // list all entries in archive tree
 // automatically skip child metadata
-function listAll(drive, archive, opt) {
-  var combined = through2.obj(function(chunk, enc, cb) {
-    if (chunk.name !== metafile) {
+function listAll(archive, opt) {
+  var combineAndPrefix = through2.obj(function(chunk, enc, cb) {
+    if (!isLinkFile(chunk.name)) {
       this.push(chunk)
     }
 
     cb()
   })
   var rootList = archive.list(opt)
-  var streams = [rootList]
-  children(archive, function (childArchives) {
+  rootList.on('data', (entry) => {
+    combineAndPrefix.write(entry)
+  })
+  children(archive, function (err, childArchives) {
     childArchives.forEach( c => {
-      var childArchive = drive.createArchive(c.key)
+      var drive = hyperdrive(memdb())
+      var childArchive = drive.createArchive(c.key, {live: true})
+      swarm(childArchive)
       var rs = childArchive.list(opt)
-      rs.prefix = c.prefix
-      streams.push(rs)
+      rs.on('data', (entry) => {
+        entry.name = c.prefix + entry.name
+        combineAndPrefix.write(entry)
+      })
     })
   })
 
-  streams.forEach(s => { s.pipe(prefixStream(s.prefix)).pipe(combined) })
-  return combined
-}
-
-function appendLine(archive, name, toAppend, cb) {
-  var rs = archive.createFileReadStream(name)
-
-  multistream([rs, toStream(toAppend+"\n")]).pipe(archive.createFileWriteStream(name)).on('finish', cb)
-}
-
-function prefixStream(prefix) {
-  return through2.obj(function(chunk, enc, cb) {
-    if (prefix) chunk.name = prefix + chunk.name
-    this.push(chunk)
-    cb()
-  })
+  return combineAndPrefix
 }
