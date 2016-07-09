@@ -55,6 +55,7 @@ function listAll(archive, opt) {
   })
   var rootList = archive.list(opt)
   rootList.on('data', (entry) => {
+    entry.archive = archive
     combineAndPrefix.write(entry)
   })
   children(archive, function (err, childArchives) {
@@ -64,6 +65,7 @@ function listAll(archive, opt) {
       swarm(childArchive)
       var rs = childArchive.list(opt)
       rs.on('data', (entry) => {
+        entry.archive = childArchive
         entry.name = c.prefix + entry.name
         combineAndPrefix.write(entry)
       })

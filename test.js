@@ -129,6 +129,7 @@ describe('hyperdrive-link', function () {
 
         entries.on('data', (entry) => {
           assert.equal(entry.name, '/test.txt')
+          assert.deepEqual(entry.archive.key, archive1.key)
 
           done()
         })
@@ -143,6 +144,7 @@ describe('hyperdrive-link', function () {
 
         entries.on('data', (entry) => {
           assert.equal(entry.name, '/link2/test2.txt')
+          assert.deepEqual(entry.archive.key, archive2.key)
 
           done()
         })
