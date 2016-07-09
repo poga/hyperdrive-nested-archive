@@ -1,6 +1,6 @@
 # hyperdrive-nested-archive
 
-create nested [hyperdrive](https://github.com/mafintosh/hyperdrive) archives, where archives can have different owner.
+create nested [hyperdrive](https://github.com/mafintosh/hyperdrive) archives(archive tree), where each archive can have different owner.
 
 ## Install
 
@@ -33,8 +33,21 @@ nested.addChild(archive1, '/linkToChild', archive2, function(err) {
 
 toStream('foo').pipe(archive1.createFileWriteStream('/test.txt'))
 toStream('foo').pipe(archive2.createFileWriteStream('/test2.txt'))
-
 ```
+
+## API
+
+#### require
+
+`var nested = require('hyperdrive-nested-archive')`
+
+#### nested.addChild(rootArchive, prefix, childArchive, callback(err))
+
+add `childArchive` to `rootArchive`'s children.
+
+#### nested.listAll(rootArchive, opts)
+
+returns a stream which emit entries for each entry in the archive tree.
 
 ## How it works
 
