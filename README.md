@@ -1,5 +1,7 @@
 # hyperdrive-nested-archive
 
+**Deprecated, use [hyperdrive-ln](https://github.com/poga/hyperdrive-ln) instead**
+
 create nested [hyperdrive](https://github.com/mafintosh/hyperdrive) archives(archive tree), where each archive can have different owner.
 
 ## Install
